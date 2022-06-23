@@ -12,7 +12,7 @@ def rsaEncrypt(publicKey: str, msg: str):
 
     for ch in msg:
         ch = ord(ch)
-        numbers = str((ch ** e) % n)
+        numbers = str(pow(ch, e, n))
         for num in numbers:
             encrypt += chr(int(num) + 64)
         encrypt += '&'
@@ -29,7 +29,7 @@ def rsaDecrypt(privateKey: str, cypherText: str):
             digit += str(ord(ch) - 64)
         else:
             number = int(digit)
-            decrypt += chr(((number ** d) % n))
+            decrypt += chr(pow(number, d, n))
             digit = ''
 
     return decrypt
