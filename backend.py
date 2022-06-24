@@ -1,10 +1,22 @@
 from flask import Flask
-from flask_restx import Resource, Api, cors
+from flask_restx import Resource, Api, cors, fields
 import sympy as smp
 
 api = Api()
 app = Flask(__name__)
-api.init_app(app)
+api = Api(app, version='1.0', title='RSA Project')
+
+ns = api.namespace('RSA', description='RSA Project')
+
+encrypt_model = api.model('Encrypt', {
+    'public_key': fields.String(required=True),
+    'message': fields.String(required=True)
+    })
+
+decrypt_model = api.model('Decrypt', {
+    'private_key': fields.String(required=True),
+    'message': fields.String(required=True)
+    })
 
 def rsaEncrypt(publicKey: str, msg: str):
     n, e = extractKey(publicKey)
@@ -87,7 +99,7 @@ def extractKey(key: str):
 
     return n, N
 
-@api.route('/generate-keys')
+@ns.route('/generate-keys')
 class GenerateKeys(Resource):
     @cors.crossdomain(origin="*")
     def get(self):
@@ -99,21 +111,25 @@ class GenerateKeys(Resource):
 
         return response
 
-@api.route('/encrypt-keys/<string:public_key>/<string:message>')
+@ns.route('/encrypt-keys')
 class Encrypt_message(Resource):
     @cors.crossdomain(origin="*")
-    def get(self, public_key, message):
+    @ns.expect(encrypt_model)
+    def post(self):
+        data = api.payload
         response = {
-            'cryptMessage': rsaEncrypt(public_key, message)
+            'cryptMessage': rsaEncrypt(data['public_key'], data['message'])
         }
         return response
 
-@api.route('/decrypt-message/<string:private_key>/<string:message>')
+@ns.route('/decrypt-message')
 class Decrypt_message(Resource):
     @cors.crossdomain(origin="*")
-    def get(self, private_key, message):
+    @ns.expect(decrypt_model)
+    def post(self):
+        data = api.payload
         response = {
-            'decryptMessage': rsaDecrypt(private_key, message)
+            'decryptMessage': rsaDecrypt(data['private_key'], data['message'])
         }
         return response
 
