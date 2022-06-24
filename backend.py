@@ -111,7 +111,7 @@ class GenerateKeys(Resource):
 
         return response
 
-@ns.route('/encrypt-keys')
+@ns.route('/encrypt-message')
 class Encrypt_message(Resource):
     @cors.crossdomain(origin="*")
     @ns.expect(encrypt_model)
