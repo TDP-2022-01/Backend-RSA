@@ -4,7 +4,7 @@ import sympy as smp
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
-#app.wsgi_app = ProxyFix(app.wsgi_app)
+app.wsgi_app = ProxyFix(app.wsgi_app)
 api = Api(app, version='1.0', title='RSA Project')
 
 encrypt_model = api.model('Encrypt', {
@@ -110,7 +110,7 @@ class GenerateKeys(Resource):
 
         return response
 
-@api.route('/encrypt-message', methods=['POST', 'Options'])
+@api.route('/encrypt-message')
 class Encrypt_message(Resource):
     @cors.crossdomain(origin="*")
     @api.doc(body=encrypt_model)
@@ -120,10 +120,11 @@ class Encrypt_message(Resource):
             'cryptMessage': rsaEncrypt(args['public_key'], args['message'])
         }
         return response
- 
+
     @cors.crossdomain(origin="*")
+    @api.doc(False)
     def options(self):
-        return 'Hello'
+        return
 
 @api.route('/decrypt-message', methods=['POST'])
 class Decrypt_message(Resource):
