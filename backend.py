@@ -6,7 +6,8 @@ api = Api()
 app = Flask(__name__)
 api = Api(app, version='1.0', title='RSA Project')
 
-ns = api.namespace('RSA', description='RSA Project')
+ns = api.namespace('RSA', description='RSA Project',
+        decorators=[cors.crossdomain(origin="*")])
 
 encrypt_model = api.model('Encrypt', {
     'public_key': fields.String(required=True),
