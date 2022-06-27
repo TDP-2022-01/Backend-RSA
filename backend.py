@@ -1,11 +1,15 @@
 from flask import Flask
-from flask_restx import Resource, Api, fields, cors
+from flask_cors import CORS, cross_origin
+from flask_restx import Resource, Api, fields
 import sympy as smp
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app)
 api = Api(app, version='1.0', title='RSA Project')
+
+ns = api.namespace('RSA', description='RSA Project')
+CORS(app)
 
 encrypt_model = api.model('Encrypt', {
     'public_key': fields.String(required=True),
@@ -100,20 +104,19 @@ def extractKey(key: str):
 
 @api.route('/generate-keys', methods=['GET'])
 class GenerateKeys(Resource):
-    @cors.crossdomain(origin="*")
     def get(self):
         pub, priv = generateKeys()
         response = {
-                'publicKey': pub,
-                'privateKey': priv
+                'public_key': pub,
+                'private_key': priv
                 }
 
         return response
 
-@api.route('/encrypt-message')
+@ns.route('/encrypt')
 class Encrypt_message(Resource):
-    @cors.crossdomain(origin="*")
-    @api.doc(body=encrypt_model)
+    @ns.expect(encrypt_model)
+    @cross_origin(headers=['Content-Type'])
     def post(self):
         args = api.payload
         response = {
@@ -121,15 +124,10 @@ class Encrypt_message(Resource):
         }
         return response
 
-    @cors.crossdomain(origin="*")
-    @api.doc(False)
-    def options(self):
-        return
-
-@api.route('/decrypt-message', methods=['POST'])
+@ns.route('/decrypt')
 class Decrypt_message(Resource):
-    @cors.crossdomain(origin="*")
-    @api.doc(body=decrypt_model)
+    @ns.expect(decrypt_model)
+    @cross_origin(headers=['Content-Type'])
     def post(self):
         args = api.payload
         response = {
@@ -138,4 +136,4 @@ class Decrypt_message(Resource):
         return response
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
