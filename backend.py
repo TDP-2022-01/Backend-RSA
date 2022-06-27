@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS, cross_origin
 from flask_restx import Resource, Api, cors, fields
 import sympy as smp
 
@@ -7,6 +8,7 @@ app = Flask(__name__)
 api = Api(app, version='1.0', title='RSA Project')
 
 ns = api.namespace('RSA', description='RSA Project')
+CORS(app)
 
 encrypt_model = api.model('Encrypt', {
     'public_key': fields.String(required=True),
@@ -101,20 +103,19 @@ def extractKey(key: str):
 
 @ns.route('/generate-keys')
 class GenerateKeys(Resource):
-    @cors.crossdomain(origin="*")
     def get(self):
         pub, priv = generateKeys()
         response = {
-                'publicKey': pub,
-                'privateKey': priv
+                'public_key': pub,
+                'private_key': priv
                 }
 
         return response
 
-@ns.route('/encrypt-message')
+@ns.route('/encrypt')
 class Encrypt_message(Resource):
-    @cors.crossdomain(origin="*")
     @ns.expect(encrypt_model)
+    @cross_origin(headers=['Content-Type'])
     def post(self):
         data = api.payload
         response = {
@@ -122,10 +123,10 @@ class Encrypt_message(Resource):
         }
         return response
 
-@ns.route('/decrypt-message')
+@ns.route('/decrypt')
 class Decrypt_message(Resource):
-    @cors.crossdomain(origin="*")
     @ns.expect(decrypt_model)
+    @cross_origin(headers=['Content-Type'])
     def post(self):
         data = api.payload
         response = {
